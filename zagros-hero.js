@@ -4,13 +4,13 @@
   'use strict';
 
   var hero = document.getElementById('hero');
-  var stage = document.getElementById('stage');
-  var spotsEl = document.getElementById('spots');
-  var canister = document.getElementById('canister');
-  var hint = document.getElementById('hint');
-  var lines = Array.prototype.slice.call(document.querySelectorAll('#lines .line'));
-  var bgMid = stage.querySelector('.bg-mid');
-  var bgGreen = stage.querySelector('.bg-green');
+  var stage = document.getElementById('zhStage');
+  var spotsEl = document.getElementById('zhSpots');
+  var canister = document.getElementById('zhCanister');
+  var hint = document.getElementById('zhHint');
+  var exitEl = document.getElementById('zhExit');
+  var bgMid = stage.querySelector('.zh-bg-mid');
+  var bgGreen = stage.querySelector('.zh-bg-green');
   var root = document.documentElement;
 
   var IMG_W = 1920, IMG_H = 1080, POS_Y = 0.6;   // must match .bg-layer object-position
@@ -20,7 +20,7 @@
 
   // growth stages: file, height relative to the grown oak, aspect (w/h), how far the base sinks into the ground
   var STAGES = [
-    { f: 'acorn',     h: 0.105, ar: 206 / 220, sink: 0.10 },
+    { f: 'acorn',     h: 0.105, ar: 124 / 132, sink: 0.10 },
     { f: 'sprout',    h: 0.21,  ar: 317 / 380, sink: 0.14 },
     { f: 'sapling',   h: 0.47,  ar: 271 / 560, sink: 0.02 },
     { f: 'young-oak', h: 0.73,  ar: 511 / 680, sink: 0.025 },
@@ -48,9 +48,9 @@
     var pic = document.createElement('picture');
     var src = document.createElement('source');
     src.type = 'image/webp';
-    src.srcset = 'img/' + name + '.webp';
+    src.srcset = './img/hero/' + name + '.webp';
     var img = document.createElement('img');
-    img.src = 'img/' + name + '.png';
+    img.src = './img/hero/' + name + '.png';
     img.alt = '';
     img.decoding = 'async';
     img.draggable = false;
@@ -68,19 +68,22 @@
     var n = layout.length;
     layout.forEach(function (d) {
       var el = document.createElement('div');
-      el.className = 'spot';
+      el.className = 'zh-spot';
       var shadow = document.createElement('div');
-      shadow.className = 'shadow';
+      shadow.className = 'zh-shadow';
       el.appendChild(shadow);
+      var ashadow = document.createElement('div');
+      ashadow.className = 'zh-ashadow';
+      el.appendChild(ashadow);
       var pieces = STAGES.map(function (st) {
         var p = document.createElement('div');
-        p.className = 'piece piece-' + st.f;
+        p.className = 'zh-piece zh-piece-' + st.f;
         p.appendChild(pictureFor(st.f));
         el.appendChild(p);
         return p;
       });
       spotsEl.appendChild(el);
-      spots.push({ d: d, el: el, shadow: shadow, pieces: pieces, delay: (d.o / Math.max(1, n - 1)) * 0.075, H: 0 });
+      spots.push({ d: d, el: el, shadow: shadow, ashadow: ashadow, pieces: pieces, delay: (d.o / Math.max(1, n - 1)) * 0.075, H: 0 });
     });
   }
 
@@ -125,10 +128,14 @@
       sp.shadow.style.height = sh.toFixed(1) + 'px';
       sp.shadow.style.left = (-sw / 2).toFixed(1) + 'px';
       sp.shadow.style.bottom = (-sh / 2).toFixed(1) + 'px';
+      var aw = sp.pieces[0]._h * 1.6, ah = aw * 0.32;
+      sp.ashadow.style.width = aw.toFixed(1) + 'px';
+      sp.ashadow.style.height = ah.toFixed(1) + 'px';
+      sp.ashadow.style.left = (-aw / 2).toFixed(1) + 'px';
+      sp.ashadow.style.bottom = (-ah * 0.45).toFixed(1) + 'px';
     });
   }
 
-  var lastLine = -1;
   function render(p) {
     // background: dry -> mid -> green
     bgMid.style.opacity = smooth(seg(p, 0.20, 0.48)).toFixed(3);
@@ -150,6 +157,9 @@
       var sinkIn = x[0] * P[0]._h * 0.25;
       var aOp = Math.min(1, fall * 2.5) * (1 - x[0]);
       P[0].style.opacity = aOp.toFixed(3);
+      var near = e * e;
+      sp.ashadow.style.opacity = (near * (1 - x[0] * 0.85)).toFixed(3);
+      sp.ashadow.style.transform = 'scale(' + mix(1.5, 1, near).toFixed(3) + ')';
       P[0].style.transform = 'translate3d(0,' + (drop + sinkIn).toFixed(1) + 'px,0) rotate(' + rot.toFixed(1) + 'deg) scale(' + (1 - 0.25 * x[0]).toFixed(3) + ')';
 
       // stages 1..4: crossfade with a gentle growth scale that bridges the size difference
@@ -183,23 +193,20 @@
 
     hint.style.opacity = (1 - seg(p, 0, 0.04)).toFixed(3);
 
-    var li = p < 0.10 ? 0 : p < 0.32 ? 1 : p < 0.56 ? 2 : p < 0.80 ? 3 : 4;
-    if (li !== lastLine) {
-      lines.forEach(function (l, k) {
-        l.classList.toggle('is-active', k === li);
-        if (k === li) l.removeAttribute('aria-hidden'); else l.setAttribute('aria-hidden', 'true');
-      });
-      lastLine = li;
-    }
   }
 
   // ---------- scroll -> target, rAF lerp -> current ----------
   var target = 0, current = 0, rafId = 0, lastT = 0;
   var reduced = false;
 
+  var lastExit = -1;
   function readTarget() {
     var y = window.pageYOffset || document.documentElement.scrollTop;
     target = clamp((y - heroTop) / track, 0, 1);
+    // once the pinned scene starts scrolling away, soften its bottom edge into the page background
+    var ex = clamp((y - heroTop - track) / (stageH * 0.35), 0, 1);
+    ex = Math.round(ex * 100) / 100;
+    if (ex !== lastExit) { exitEl.style.opacity = String(ex); lastExit = ex; }
   }
   function tick(t) {
     var dt = lastT ? Math.min(64, t - lastT) : 16.7;
@@ -230,7 +237,7 @@
 
   function applyMotionPref(isReduced) {
     reduced = isReduced;
-    root.classList.toggle('reduced', reduced);
+    root.classList.toggle('zh-reduced', reduced);
     layout();
     if (reduced) { if (rafId) cancelAnimationFrame(rafId); rafId = 0; current = target = 1; render(1); }
     else { readTarget(); current = target; render(current); }
