@@ -1,0 +1,35 @@
+/* SAMPLE packing overlays (~1000 hospital names). Canvas for far field; DOM stakes for readable front. */
+.zh-pack {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  width: 100%; height: 100%;
+}
+.zh-pack-fg {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  font-family: "Kalameh", Tahoma, sans-serif;
+}
+.zh-pack-stake {
+  position: absolute; left: 0; top: 0; will-change: transform, opacity;
+  opacity: 0;
+}
+.zh-pack-stake .stick {
+  position: absolute; left: -1.5px; bottom: 0; width: 3px; height: 18px; border-radius: 1px;
+  background: linear-gradient(90deg, #7a5f43, #5a4430 60%, #4a3726);
+}
+.zh-pack-stake .plate {
+  position: absolute; bottom: 16px; left: 0; transform: translateX(-50%) rotate(-1.5deg); transform-origin: 50% 100%;
+  padding: 2px 8px 1px; border-radius: 3px;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,90,60,.06) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #e9dec5, #d9c9a8);
+  border: 1px solid rgba(96,72,46,.42);
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 2px 5px rgba(50,36,22,.22);
+  color: #0b2e32; font-weight: 700; font-size: 10.5px; white-space: nowrap; line-height: 1.5;
+}
+.zh-pack-stake .foot {
+  position: absolute; left: -9px; bottom: -3px; width: 18px; height: 6px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(60,42,26,.45), rgba(60,42,26,0));
+}
+@media (min-width: 900px) {
+  .zh-pack-stake .stick { height: 24px; width: 3.5px; }
+  .zh-pack-stake .plate { bottom: 22px; font-size: 12.5px; padding: 3px 10px 2px; }
+}
