@@ -117,6 +117,48 @@
   .zh-canister { height: min(29vh, 260px); width: calc(min(29vh, 260px) * 0.4433); }
 }
 
+/* hospital name markers: small painted wooden stakes at the base of three spots (transform/opacity only) */
+.zh-marks { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.zh-mark { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; font-family: "Kalameh", Tahoma, sans-serif; }
+.zh-mark-txt { white-space: nowrap; line-height: 1.5; }
+.zh-mark-stick {
+  position: absolute; left: -1.5px; bottom: 0; width: 3px; height: 18px; border-radius: 1px;
+  background: linear-gradient(90deg, #7a5f43, #5a4430 60%, #4a3726);
+}
+.zh-mark-plate {
+  position: absolute; bottom: 16px; left: 0; transform: translateX(-50%) rotate(-1.5deg); transform-origin: 50% 100%;
+  padding: 2px 8px 1px; border-radius: 3px;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,90,60,.06) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #e9dec5, #d9c9a8);
+  border: 1px solid rgba(96,72,46,.42);
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 2px 5px rgba(50,36,22,.22);
+  color: #0b2e32; font-weight: 700; font-size: 10.5px;
+}
+.zh-mark-foot {
+  position: absolute; left: -9px; bottom: -3px; width: 18px; height: 6px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(60,42,26,.45), rgba(60,42,26,0));
+}
+@media (min-width: 900px) {
+  .zh-mark-stick { height: 24px; width: 3.5px; }
+  .zh-mark-plate { bottom: 22px; font-size: 12.5px; padding: 3px 10px 2px; }
+}
+
+/* evening: weathered, slightly darker wood so the plates sit in the dusk grade (which also dims them) instead of glowing */
+[data-theme="dark"] .zh-mark-plate, [data-theme="noir"] .zh-mark-plate {
+  background:
+    repeating-linear-gradient(0deg, rgba(90,66,44,.08) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #e2d4b6, #cdbb98);
+  border-color: rgba(70,52,34,.55);
+  box-shadow: 0 1px 0 rgba(255,244,220,.28) inset, 0 2px 6px rgba(0,0,0,.30);
+  color: #082427;
+}
+[data-theme="noir"] .zh-mark-plate { background:
+    repeating-linear-gradient(0deg, rgba(80,62,50,.08) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #dfd3bd, #c8b99f); }
+[data-theme="dark"] .zh-mark-stick, [data-theme="noir"] .zh-mark-stick { background: linear-gradient(90deg, #6a523a, #4c3a29 60%, #3d2e20); }
+[data-theme="dark"] .zh-mark-foot, [data-theme="noir"] .zh-mark-foot { background: radial-gradient(closest-side, rgba(10,14,12,.55), rgba(10,14,12,0)); }
+
 /* reduced motion: final state, static, no scroll track */
 .zh-reduced .zh-track { height: auto; }
 .zh-reduced .zh-stage { position: relative; --zh-vis-bottom: 0px; height: 100vh; height: 100svh; min-height: 560px; }

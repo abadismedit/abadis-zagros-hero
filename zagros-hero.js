@@ -9,6 +9,7 @@
   var canister = document.getElementById('zhCanister');
   var hint = document.getElementById('zhHint');
   var exitEl = document.getElementById('zhExit');
+  var marksEl = document.getElementById('zhMarks');
   var bgMid = stage.querySelector('.zh-bg-mid');
   var bgGreen = stage.querySelector('.zh-bg-green');
   var root = document.documentElement;
@@ -43,6 +44,65 @@
   function smooth(t) { return t * t * (3 - 2 * t); }
   function easeOut(t) { return 1 - (1 - t) * (1 - t) * (1 - t); }
   function mix(a, b, t) { return a + (b - a) * t; }
+
+  // hospital name markers: small painted wooden stakes at the base of three foreground spots
+  var MARK_NAMES = ['بیمارستان جماران', 'بیمارستان باهنر کرمان', 'بیمارستان الزهرا اصفهان'];
+  var MARK_MAP = { tall: { 0: 0, 1: 1, 2: 2 }, wide: { 0: 0, 5: 1, 1: 2 } };   // spot index -> name
+  var marks = [], marksKey = '', stageW = 0, canBox = null;
+
+  function buildMarks(key) {
+    marksEl.textContent = '';
+    marks = [];
+    var map = MARK_MAP[key];
+    spots.forEach(function (sp, i) {
+      if (!(i in map)) return;
+      var el = document.createElement('div');
+      el.className = 'zh-mark';
+      el.innerHTML = '<i class="zh-mark-foot"></i><i class="zh-mark-stick"></i><span class="zh-mark-plate"><span class="zh-mark-txt"></span></span>';
+      el.querySelector('.zh-mark-txt').textContent = MARK_NAMES[map[i]];
+      marksEl.appendChild(el);
+      marks.push({ sp: sp, el: el, plate: el.querySelector('.zh-mark-plate'), w: 0, side: 1 });
+    });
+    marksKey = key;
+  }
+  function layoutMarks(key, W) {
+    if (!marksEl) return;
+    if (key !== marksKey || !marks.length) buildMarks(key);
+    marks.forEach(function (m) {
+      m.side = m.sp.gx < W / 2 ? 1 : -1;            // stakes lean toward the centre of the screen
+      m.w = m.plate.offsetWidth; m.h = m.plate.offsetHeight;
+      m.lift = parseFloat(getComputedStyle(m.plate).bottom) || 16;
+    });
+    // final (risen) canister box, so a marker never ends up in front of it
+    canBox = { l: canister.offsetLeft - canister.offsetWidth / 2, r: canister.offsetLeft + canister.offsetWidth / 2,
+               t: canister.offsetTop, b: canister.offsetTop + canister.offsetHeight };
+  }
+  function renderMarks() {
+    if (!marks.length) return;
+    var desk = stageW >= 900, maxH = 0;
+    marks.forEach(function (m) { if (m.sp.H > maxH) maxH = m.sp.H; });
+    marks.forEach(function (m) {
+      var sp = m.sp;
+      var appear = smooth(clamp((sp.fall - 0.85) / 0.15, 0, 1));   // once the acorn has landed
+      var ds = clamp(0.8 + 0.2 * (sp.H / maxH), 0.82, 1);         // farther spots get smaller markers
+      var x = sp.gx + m.side * (sp.H * 0.15 + (desk ? 12 : 9));
+      var y = sp.gy + 2 + (1 - appear) * 6;
+      var half = m.w * ds / 2;
+      if (canBox) {
+        var pt = sp.gy - m.lift - m.h * ds, pb = sp.gy - m.lift + 8;
+        if (pb > canBox.t && pt < canBox.b) {
+          if (sp.gx < stageW / 2) x = Math.min(x, canBox.l - 8 - half);
+          else x = Math.max(x, canBox.r + 8 + half);
+        }
+      }
+      var px = clamp(x, half + 6, stageW - half - 6) - x;   // plate stays on screen
+      var tr = 'translateX(calc(-50% + ' + px.toFixed(1) + 'px)) rotate(' + (m.side * -1.5) + 'deg) scale(' + ds.toFixed(3) + ')';
+      if (tr !== m._tr) { m.plate.style.transform = tr; m._tr = tr; }
+      var o = appear.toFixed(3);
+      if (o !== m._o) { m.el.style.opacity = o; m._o = o; }
+      m.el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+    });
+  }
 
   function pictureFor(name) {
     var pic = document.createElement('picture');
@@ -111,7 +171,7 @@
       var x = ox + ix * s, y = oy + iy * IMG_H * s;
       var k = clamp((iy - HORIZON) / (NEAR_Y - HORIZON), 0.12, 1.1);
       var treeH = MAX_TREE * IMG_H * s * k * sizeMul;    // grown oak height in CSS px
-      sp.H = treeH;
+      sp.H = treeH; sp.gx = x; sp.gy = y;
       sp.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
       sp.el.style.zIndex = String(Math.round(iy * 1000));
       STAGES.forEach(function (st, i) {
@@ -134,6 +194,8 @@
       sp.ashadow.style.left = (-aw / 2).toFixed(1) + 'px';
       sp.ashadow.style.bottom = (-ah * 0.45).toFixed(1) + 'px';
     });
+    stageW = W;
+    layoutMarks(key, W);
   }
 
   function render(p) {
@@ -144,6 +206,7 @@
     for (var i = 0; i < spots.length; i++) {
       var sp = spots[i], d = sp.delay, P = sp.pieces;
       var fall = seg(p, 0.07 + d, 0.16 + d);
+      sp.fall = fall;
       var x = [
         smooth(seg(p, 0.22 + d, 0.29 + d)),   // acorn -> sprout
         smooth(seg(p, 0.36 + d, 0.43 + d)),   // sprout -> sapling
@@ -192,6 +255,7 @@
     canister.style.transform = 'translate3d(-50%,' + ((1 - c) * 26).toFixed(2) + '%,0)';
 
     hint.style.opacity = (1 - seg(p, 0, 0.04)).toFixed(3);
+    renderMarks();
 
   }
 
@@ -253,7 +317,9 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('orientationchange', onResize, { passive: true });
-  window.addEventListener('load', function () { layout(); if (!reduced) { readTarget(); kick(); } });
+  window.addEventListener('load', function () { layout(); if (!reduced) { readTarget(); kick(); } else render(1); });
+  // plate widths depend on Kalameh; re-measure once it is in
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { layout(); render(reduced ? 1 : current); });
 
   // test hook for screenshots: jump straight to a progress value without smoothing
   window.__zagrosHero = { set: function (p) { target = current = clamp(p, 0, 1); render(current); }, layout: layout };

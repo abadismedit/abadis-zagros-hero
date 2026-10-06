@@ -55,6 +55,7 @@ stage=f'''  <div class="zh-track" id="hero">
           <img src="./img/hero/canister.png" alt="" width="399" height="900" decoding="async">
         </picture>
       </div>
+      <div class="zh-marks" id="zhMarks" aria-hidden="true"></div>
       <div class="zh-dusk" aria-hidden="true"></div>
       <div class="zh-veil" aria-hidden="true"></div>
       <div class="zh-exit" id="zhExit" aria-hidden="true"></div>
