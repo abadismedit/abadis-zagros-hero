@@ -1,0 +1,166 @@
+/* Zagros oak scroll scene: replaces the template's static .hero-art painting.
+   Everything is namespaced (zh-) so the template's own CSS stays untouched. */
+.zh-track { position: relative; height: 400vh; background: #e8e4dc; }
+.zh-stage {
+  position: sticky; top: 0;
+  height: 100vh;             /* iOS: 100vh == large viewport */
+  height: 100lvh;            /* stable while Safari toolbars collapse/expand */
+  overflow: hidden;
+  background: #e8e4dc;
+  --zh-vis-bottom: 0px;      /* part of the stage hidden behind Safari's expanded bottom toolbar */
+}
+@supports (height: 100svh) { .zh-stage { --zh-vis-bottom: calc(100lvh - 100svh); } }
+
+.zh-bg, .zh-spots { position: absolute; inset: 0; z-index: 0; }
+.zh-bg-layer {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 60%;
+  display: block; max-width: none;
+}
+.zh-bg-mid, .zh-bg-green { opacity: 0; will-change: opacity; }
+
+.zh-spot { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.zh-piece {
+  position: absolute; bottom: 0; left: 0;
+  transform-origin: 50% 100%;
+  opacity: 0; pointer-events: none;
+  -webkit-user-select: none; user-select: none;
+}
+.zh-piece img { display: block; width: 100%; height: auto; }
+.zh-shadow, .zh-ashadow {
+  position: absolute; left: 0; bottom: 0;
+  border-radius: 50%;
+  opacity: 0; transform-origin: 50% 50%;
+  pointer-events: none;
+}
+.zh-shadow { background: radial-gradient(closest-side, rgba(40,48,24,.42), rgba(40,48,24,.18) 55%, rgba(40,48,24,0)); }
+/* acorn contact shadow: warm umber, matches the painted rocks' shadows */
+.zh-ashadow { background: radial-gradient(closest-side, rgba(70,48,28,.62), rgba(70,48,28,.26) 58%, rgba(70,48,28,0)); }
+
+/* light veil behind the CSR hero copy so it stays legible over the painted mountain */
+.zh-veil {
+  position: absolute; z-index: 2; pointer-events: none;
+  left: 0; right: 0; top: 0; height: 72%;
+  background: radial-gradient(ellipse 62% 58% at 50% 34%, rgba(243,250,250,.70), rgba(243,250,250,.40) 50%, rgba(243,250,250,0) 78%);
+}
+@media (max-width: 560px) {
+  .zh-veil { background: radial-gradient(ellipse 95% 52% at 50% 30%, rgba(243,250,250,.74), rgba(243,250,250,.44) 55%, rgba(243,250,250,0) 82%); }
+}
+/* night: an evening grade over the whole scene (plain alpha layer, no filters, so it stays cheap on iOS) */
+.zh-dusk { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s ease; }
+[data-theme="dark"] .zh-dusk {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 80% 22% at 50% 60%, rgba(255,176,120,.10), rgba(255,176,120,0) 70%),
+    linear-gradient(180deg, rgba(5,22,30,.62) 0%, rgba(8,34,44,.46) 42%, rgba(18,34,40,.34) 62%, rgba(4,18,22,.50) 100%);
+}
+[data-theme="noir"] .zh-dusk {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 80% 22% at 50% 60%, rgba(255,160,140,.08), rgba(255,160,140,0) 70%),
+    linear-gradient(180deg, rgba(14,10,32,.66) 0%, rgba(26,18,52,.48) 42%, rgba(24,20,40,.36) 62%, rgba(10,8,22,.54) 100%);
+}
+[data-theme="dark"] .zh-veil { background: radial-gradient(ellipse 70% 58% at 50% 32%, rgba(4,17,19,.55), rgba(4,17,19,.28) 52%, rgba(4,17,19,0) 80%); }
+[data-theme="noir"] .zh-veil { background: radial-gradient(ellipse 70% 58% at 50% 32%, rgba(10,8,22,.58), rgba(10,8,22,.30) 52%, rgba(10,8,22,0) 80%); }
+[data-theme="dark"] .zh-track, [data-theme="dark"] .zh-stage { background: #0b2427; }
+[data-theme="noir"] .zh-track, [data-theme="noir"] .zh-stage { background: #13121f; }
+
+/* soft seam into the page's fixed CSR background once the pinned scene scrolls away */
+.zh-exit {
+  position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 45%;
+  background: linear-gradient(180deg, rgba(231,237,232,0), #e7ede8);
+  opacity: 0; pointer-events: none;
+}
+[data-theme="dark"] .zh-exit { background: linear-gradient(180deg, rgba(46,57,56,0), #2e3938); }
+[data-theme="noir"] .zh-exit { background: linear-gradient(180deg, rgba(40,40,49,0), #282831); }
+
+/* the CSR page's hero section, kept verbatim, sits on top of the scene (layout only) */
+.zh-stage .csr-hero {
+  position: absolute; z-index: 3;
+  top: 0; left: 0; right: 0;
+  min-height: 0; display: block;
+  padding: 122px 24px 0;
+}
+@media (max-width: 560px) { .zh-stage .csr-hero { padding-top: 104px; } }
+
+.zh-canister {
+  position: absolute; z-index: 1;
+  left: 50%;
+  bottom: calc(var(--zh-vis-bottom) + 3vh);
+  height: min(34vh, 380px);
+  width: calc(min(34vh, 380px) * 0.4433);
+  opacity: 0;
+  transform: translate3d(-50%, 30%, 0);
+  pointer-events: none;
+}
+.zh-canister picture, .zh-canister img { display: block; width: 100%; height: 100%; max-width: none; }
+.zh-canister img { object-fit: contain; }
+.zh-canister-glow {
+  position: absolute; left: -45%; right: -45%; bottom: -5%; height: 14%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,.6), rgba(255,255,255,0));
+}
+
+.zh-hint {
+  position: absolute; z-index: 3; left: 0; right: 0;
+  bottom: calc(var(--zh-vis-bottom) + 18px);
+  display: flex; justify-content: center; pointer-events: none;
+}
+.zh-hint i {
+  display: block; width: 1px; height: 34px;
+  background: linear-gradient(to bottom, rgba(255,255,255,.95), rgba(255,255,255,0));
+  animation: zh-hint 2.4s ease-in-out infinite; transform-origin: top;
+}
+@keyframes zh-hint { 0%,100% { transform: scaleY(.4); opacity: .5 } 50% { transform: scaleY(1); opacity: 1 } }
+
+@media (max-width: 560px) {
+  .zh-canister { height: min(29vh, 260px); width: calc(min(29vh, 260px) * 0.4433); }
+}
+
+/* hospital name markers: small painted wooden stakes at the base of three spots (transform/opacity only) */
+.zh-marks { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.zh-mark { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; font-family: "Kalameh", Tahoma, sans-serif; }
+.zh-mark-txt { white-space: nowrap; line-height: 1.5; }
+.zh-mark-stick {
+  position: absolute; left: -1.5px; bottom: 0; width: 3px; height: 18px; border-radius: 1px;
+  background: linear-gradient(90deg, #7a5f43, #5a4430 60%, #4a3726);
+}
+.zh-mark-plate {
+  position: absolute; bottom: 16px; left: 0; transform: translateX(-50%) rotate(-1.5deg); transform-origin: 50% 100%;
+  padding: 2px 8px 1px; border-radius: 3px;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,90,60,.06) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #e9dec5, #d9c9a8);
+  border: 1px solid rgba(96,72,46,.42);
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 2px 5px rgba(50,36,22,.22);
+  color: #0b2e32; font-weight: 700; font-size: 10.5px;
+}
+.zh-mark-foot {
+  position: absolute; left: -9px; bottom: -3px; width: 18px; height: 6px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(60,42,26,.45), rgba(60,42,26,0));
+}
+@media (min-width: 900px) {
+  .zh-mark-stick { height: 24px; width: 3.5px; }
+  .zh-mark-plate { bottom: 22px; font-size: 12.5px; padding: 3px 10px 2px; }
+}
+
+/* evening: weathered, slightly darker wood so the plates sit in the dusk grade (which also dims them) instead of glowing */
+[data-theme="dark"] .zh-mark-plate, [data-theme="noir"] .zh-mark-plate {
+  background:
+    repeating-linear-gradient(0deg, rgba(90,66,44,.08) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #e2d4b6, #cdbb98);
+  border-color: rgba(70,52,34,.55);
+  box-shadow: 0 1px 0 rgba(255,244,220,.28) inset, 0 2px 6px rgba(0,0,0,.30);
+  color: #082427;
+}
+[data-theme="noir"] .zh-mark-plate { background:
+    repeating-linear-gradient(0deg, rgba(80,62,50,.08) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #dfd3bd, #c8b99f); }
+[data-theme="dark"] .zh-mark-stick, [data-theme="noir"] .zh-mark-stick { background: linear-gradient(90deg, #6a523a, #4c3a29 60%, #3d2e20); }
+[data-theme="dark"] .zh-mark-foot, [data-theme="noir"] .zh-mark-foot { background: radial-gradient(closest-side, rgba(10,14,12,.55), rgba(10,14,12,0)); }
+
+/* reduced motion: final state, static, no scroll track */
+.zh-reduced .zh-track { height: auto; }
+.zh-reduced .zh-stage { position: relative; --zh-vis-bottom: 0px; height: 100vh; height: 100svh; min-height: 560px; }
+.zh-reduced .zh-hint { display: none; }
+@media (prefers-reduced-motion: reduce) { .zh-hint i { animation: none; } }

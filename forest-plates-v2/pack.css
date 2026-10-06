@@ -1,0 +1,29 @@
+/* Forest plates-only packing. Canvas for far/mid; DOM FG plates match canvas family. */
+.zh-pack, .zh-pack-fg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  width: 100%; height: 100%;
+}
+.zh-pack-fg { font-family: "Kalameh", Tahoma, sans-serif; }
+/* canister must sit above every name plate */
+.zh-canister { z-index: 1 !important; }
+.zh-pack-stake {
+  position: absolute; left: 0; top: 0; will-change: transform, opacity;
+  opacity: 0;
+}
+.zh-pack-stake .stick, .zh-pack-stake .foot { display: none !important; } /* plates only */
+.zh-pack-stake .plate {
+  position: absolute; bottom: 2px; left: 0;
+  transform: translateX(-50%); transform-origin: 50% 100%;
+  padding: 2px 8px 1px; border-radius: 2px;
+  background: linear-gradient(180deg, #e4d6b4, #d8c8a4);
+  border: 1px solid rgba(96,72,46,.42);
+  box-shadow: 0 1px 3px rgba(50,36,22,.16);
+  color: #0b2e32;
+  font-weight: 600;           /* same family as canvas mid/far — not extra-bold */
+  font-size: 10px;
+  white-space: nowrap; line-height: 1.45;
+  letter-spacing: 0;
+}
+@media (min-width: 900px) {
+  .zh-pack-stake .plate { font-size: 11.5px; padding: 3px 9px 2px; }
+}
